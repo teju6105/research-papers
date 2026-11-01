@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+
+  @@map("UserRole")
+}
+
+model User {
+  id            String          @id @default(cuid()) @db.VarChar(30)
+  name          String          @db.VarChar(100)
+  email         String          @unique(map: "Users_email_key") @db.VarChar(191)
+  passwordHash  String          @map("password_hash") @db.VarChar(255)
+  role          UserRole        @default(USER)
+  createdAt     DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt     DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  bookmarks     Bookmark[]
+  searchHistory SearchHistory[]
+
+  @@map("Users")
+}
+
+model Paper {
+  id            String     @id @default(cuid()) @db.VarChar(30)
+  title         String     @db.VarChar(500)
+  authors       Json
+  topic         String     @db.VarChar(120)
+  keywords      Json
+  publishedYear Int?       @map("published_year") @db.UnsignedSmallInt
+  createdAt     DateTime   @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt     DateTime   @updatedAt @map("updated_at") @db.DateTime(3)
+  bookmarks     Bookmark[]
+
+  @@index([topic], map: "Papers_topic_idx")
+  @@index([publishedYear], map: "Papers_published_year_idx")
+  @@map("Papers")
+}
+
+model Bookmark {
+  userId    String   @map("user_id") @db.VarChar(30)
+  paperId   String   @map("paper_id") @db.VarChar(30)
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  paper     Paper    @relation(fields: [paperId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([userId, paperId])
+  @@index([paperId], map: "Bookmarks_paper_id_idx")
+  @@map("Bookmarks")
+}
+
+model SearchHistory {
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  userId    String   @map("user_id") @db.VarChar(30)
+  query     String   @db.VarChar(500)
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([userId, createdAt], map: "SearchHistory_user_created_at_idx")
+  @@map("SearchHistory")
+}
