@@ -89,3 +89,6 @@ Set the private Atlas URI with `.\scripts\set-mongodb-uri.ps1`, seed 20 fictiona
 - [MongoDB integration guide](docs/MONGODB_GUIDE.md)
 
 MongoDB, ChromaDB, screenshots, and their test-result documentation will be added alongside the corresponding implementation stages.
+## Contributors
+ - Deepthi A E
+ - Tejaswini
